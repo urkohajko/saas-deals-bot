@@ -1,17 +1,18 @@
-import os
 import tweepy
+import os
 
-API_KEY = os.getenv("X_API_KEY")
-API_SECRET = os.getenv("X_API_SECRET")
-ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN")
-ACCESS_SECRET = os.getenv("X_ACCESS_SECRET")
+api_key = os.getenv("X_API_KEY")
+api_secret = os.getenv("X_API_SECRET")
+access_token = os.getenv("X_ACCESS_TOKEN")
+access_secret = os.getenv("X_ACCESS_SECRET")
 
-client = tweepy.Client(
-    consumer_key=API_KEY,
-    consumer_secret=API_SECRET,
-    access_token=ACCESS_TOKEN,
-    access_token_secret=ACCESS_SECRET
+auth = tweepy.OAuth1UserHandler(
+    api_key,
+    api_secret,
+    access_token,
+    access_secret
 )
 
-client.create_tweet(text="🔥 Oferta SaaS del día: mensaje de prueba automático")
-print("Tweet enviado.")
+api = tweepy.API(auth)
+
+api.update_status("🔥 Oferta SaaS del día: mensaje de prueba automático")
