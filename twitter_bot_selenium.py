@@ -1,83 +1,79 @@
+import os
+import platform
+import time
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-import time
+from selenium.webdriver.chrome.service import Service
+
 
 class TwitterBot:
-    def __init__(self, username, password):
-        self.username = username
+    def __init__(self, user, password):
+        self.user = user
         self.password = password
 
-        # ============================
-        # CONFIGURACIÓN CHROME LINUX
-        # ============================
-        options = Options()
-        options.add_argument("--headless=new")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-extensions")
+        chrome_options = Options()
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--window-size=1920,1080")
 
-        # Anti‑detección
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option("useAutomationExtension", False)
+        system = platform.system()
 
-        # ============================
-        # DRIVER LINUX (RENDER)
-        # ============================
-        self.driver = webdriver.Chrome(
-            service=Service("/usr/bin/chromedriver"),
-            options=options
-        )
+        if system == "Windows":
+            print("Running on Windows → using local ChromeDriver")
+            # En Windows NO usamos rutas manuales
+            self.driver = webdriver.Chrome(options=chrome_options)
 
-        # ============================
-        # ANTI‑DETECCIÓN JAVASCRIPT
-        # ============================
-        self.driver.execute_cdp_cmd(
-            "Page.addScriptToEvaluateOnNewDocument",
-            {
-                "source": """
-                    Object.defineProperty(navigator, 'webdriver', {
-                        get: () => undefined
-                    })
-                """
-            }
-        )
+        else:
+            print("Running on Linux (Render) → using /usr/bin/chromedriver")
+            chrome_options.add_argument("--headless=new")
+            chrome_options.binary_location = "/usr/bin/google-chrome"
 
-    # ============================
-    # LOGIN
-    # ============================
+            service = Service("/usr/bin/chromedriver")
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+
+        self.driver.set_page_load_timeout(30)
+
+
     def login(self):
+        print("Navigating to Twitter login...")
         self.driver.get("https://twitter.com/i/flow/login")
         time.sleep(5)
 
-        user_input = self.driver.find_element(By.NAME, "text")
-        user_input.send_keys(self.username)
+        # Campo usuario
+        user_input = self.driver.find_element(By.TAG_NAME, "input")
+        user_input.send_keys(self.user)
         user_input.send_keys(Keys.ENTER)
         time.sleep(3)
 
-        pass_input = self.driver.find_element(By.NAME, "password")
-        pass_input.send_keys(self.password)
-        pass_input.send_keys(Keys.ENTER)
+        # Campo contraseña
+        pwd_input = self.driver.find_element(By.NAME, "password")
+        pwd_input.send_keys(self.password)
+        pwd_input.send_keys(Keys.ENTER)
         time.sleep(5)
 
-    # ============================
-    # PUBLICAR TWEET
-    # ============================
-    def post_tweet(self, text):
+        print("Logged in successfully.")
+
+
+    def tweet(self, text):
+        print("Posting tweet...")
         self.driver.get("https://twitter.com/compose/tweet")
-        time.sleep(5)
+        time.sleep(4)
 
-        box = self.driver.find_element(By.CSS_SELECTOR, "div[aria-label='Texto del Tweet']")
-        box.send_keys(text)
+        textarea = self.driver.find_element(By.CSS_SELECTOR, "div[role='textbox']")
+        textarea.send_keys(text)
         time.sleep(1)
 
-        tweet_button = self.driver.find_element(By.XPATH, "//span[text()='Publicar']")
-        tweet_button.click()
+        textarea.send_keys(Keys.CONTROL, Keys.ENTER)
+        time.sleep(3)
 
-        time.sleep(5)
+        print("Tweet posted.")
+
+
+    def close(self):
+        print("Closing browser...")
+        self.driver.quit()
