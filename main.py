@@ -1,55 +1,21 @@
-import threading
+import os
+import tweepy
 import time
-from flask import Flask
-from twitter_bot_selenium import TwitterBot
 
-# Credenciales (puedes moverlas a variables de entorno si quieres)
-TWITTER_USER = "TU_USUARIO"
-TWITTER_PASS = "TU_PASSWORD"
+API_KEY = os.getenv("X_API_KEY")
+API_SECRET = os.getenv("X_API_SECRET")
+ACCESS_TOKEN = os.getenv("X_ACCESS_TOKEN")
+ACCESS_SECRET = os.getenv("X_ACCESS_SECRET")
 
-app = Flask(__name__)
+auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
+api = tweepy.API(auth)
 
-# -----------------------------
-#   BOT THREAD
-# -----------------------------
-def run_bot():
-    print("Starting SaaS Deals Bot...")
+def post_deal(text):
+    api.update_status(text)
 
-    try:
-        bot = TwitterBot(TWITTER_USER, TWITTER_PASS)
-        bot.login()
+print("Bot de SaaS Deals iniciado...")
 
-        while True:
-            # Aquí puedes poner tu lógica real de publicación
-            bot.tweet("🚀 SaaS Deals Bot funcionando correctamente en Render.")
-            print("Tweet enviado. Esperando 1 hora...")
-            time.sleep(3600)
-
-    except Exception as e:
-        print("Bot crashed:", e)
-
-    finally:
-        try:
-            bot.close()
-        except:
-            pass
-
-
-# -----------------------------
-#   FLASK ROUTES
-# -----------------------------
-@app.route("/")
-def home():
-    return "SaaS Deals Bot Running"
-
-
-# -----------------------------
-#   MAIN ENTRYPOINT
-# -----------------------------
-if __name__ == "__main__":
-    # Lanzar bot en un hilo separado
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
-    bot_thread.start()
-
-    print("Flask server running on port 10000...")
-    app.run(host="0.0.0.0", port=10000)
+while True:
+    post_deal("🔥 Oferta SaaS del día: mensaje de prueba automático")
+    print("Tweet enviado.")
+    time.sleep(3600)
