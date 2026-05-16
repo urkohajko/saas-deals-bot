@@ -1,6 +1,5 @@
 import os
 import tweepy
-import time
 
 API_KEY = os.getenv("X_API_KEY")
 API_SECRET = os.getenv("X_API_SECRET")
@@ -14,12 +13,5 @@ client = tweepy.Client(
     access_token_secret=ACCESS_SECRET
 )
 
-def post_deal(text):
-    client.create_tweet(text=text)
-
-print("Bot de SaaS Deals iniciado...")
-
-while True:
-    post_deal("🔥 Oferta SaaS del día: mensaje de prueba automático")
-    print("Tweet enviado.")
-    time.sleep(3600)
+client.create_tweet(text="🔥 Oferta SaaS del día: mensaje de prueba automático")
+print("Tweet enviado.")
