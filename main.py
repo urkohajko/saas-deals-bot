@@ -1,11 +1,13 @@
-import tweepy
 import os
+from atproto import Client
 
-client = tweepy.Client(
-    consumer_key=os.getenv("X_API_KEY"),
-    consumer_secret=os.getenv("X_API_SECRET"),
-    access_token=os.getenv("X_ACCESS_TOKEN"),
-    access_token_secret=os.getenv("X_ACCESS_SECRET")
-)
+def post_to_bluesky(text):
+    username = os.getenv("BSKY_USERNAME")
+    password = os.getenv("BSKY_APP_PASSWORD")
 
-client.create_tweet(text="🔥 Oferta SaaS del día: mensaje de prueba automático")
+    client = Client()
+    client.login(username, password)
+    client.send_post(text)
+
+if __name__ == "__main__":
+    post_to_bluesky("Oferta SaaS del día 🚀")
