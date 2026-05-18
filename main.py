@@ -2,37 +2,34 @@ from atproto import Client
 from fetcher import get_deals
 from formatter import build_posts
 from publisher import publicar_tweet, publicar_hilo
-
-# ============================
-# CONFIGURACIÓN
-# ============================
+from generator_threads import generar_hilo_deal
 
 HANDLE = "tu-handle.bsky.social"
 PASSWORD = "tu-password"
 
-# ============================
-# MAIN
-# ============================
 
 def main():
     client = Client()
     client.login(HANDLE, PASSWORD)
 
-    # 1. Obtener deals reales
     deals = get_deals()
-
-    # 2. Convertirlos en posts listos
     posts = build_posts(deals)
 
-    # 3. Si hay varios → hilo
+    # Si hay varios deals → hilo
     if len(posts) > 1:
         partes = [p["text"] for p in posts]
         publicar_hilo(client, partes)
         return
 
-    # 4. Si solo hay uno → post simple
-    first = posts[0]
-    publicar_tweet(client, first["text"])
+    # Si hay uno → hilo bonito
+    if len(posts) == 1:
+        deal = deals[0] if deals else None
+        hilo = generar_hilo_deal(deal)
+        publicar_hilo(client, hilo)
+        return
+
+    # Si no hay nada → fallback limpio
+    publicar_tweet(client, "Hoy no hay deals disponibles.")
 
 
 if __name__ == "__main__":
