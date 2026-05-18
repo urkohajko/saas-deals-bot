@@ -1,6 +1,3 @@
-# formatter.py
-# Formatea un deal en texto listo para Bluesky
-
 def format_deal(deal):
     name = deal["name"]
     price = deal["price"]
