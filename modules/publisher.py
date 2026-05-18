@@ -1,6 +1,3 @@
-# publisher.py
-# Generador profesional de posts para SaaS Deals
-
 from modules.fetcher import get_deals
 from modules.formatter import format_deal
 
