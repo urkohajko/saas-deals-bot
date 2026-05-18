@@ -9,4 +9,4 @@ print("PASSWORD:", repr(password))
 
 client = Client()
 client.login(username, password)
-client.send_post("Test post")
+client.send_post("Test post desde GitHub Actions")
