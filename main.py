@@ -22,9 +22,7 @@ def run_bot():
     client = Client()
     client.login(username, password)
 
-    # posts = lista de "hilos"
-    # cada hilo = lista de dicts: {"text": str, "image_url": str | None}
-    posts = build_posts()
+    posts = build_posts()  # lista de hilos
 
     for thread in posts:
         if not thread:
@@ -49,7 +47,7 @@ def run_bot():
 
         root_post = client.send_post(first["text"], embed=embed)
 
-        # Resto del hilo (replies encadenadas)
+        # Resto del hilo
         parent = root_post
         for part in thread[1:]:
             embed = None
