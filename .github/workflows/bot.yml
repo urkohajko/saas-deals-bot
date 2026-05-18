@@ -1,29 +1,31 @@
-name: SaaS Deals Bot
+name: run-bot
 
 on:
   schedule:
-    - cron: "0 9 * * *"
-  workflow_dispatch:
+    - cron: "0 */6 * * *"   # Ejecutar cada 6 horas
+  workflow_dispatch:        # Permite ejecutarlo manualmente
 
 jobs:
-  run-bot:
+  run:
     runs-on: ubuntu-latest
-    env:
-      BSKY_USERNAME: ${{ secrets.BSKY_USERNAME }}
-      BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
-      BSKY_DISPLAY_NAME: "SaaS-Deals"
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run bot
-        run: python main.py
+        env:
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_PASSWORD: ${{ secrets.BSKY_PASSWORD }}
+        run: |
+          python main.py
