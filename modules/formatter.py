@@ -1,72 +1,43 @@
-def format_deal_long(deal):
-    name = deal["name"]
-    price = deal["price"]
-    old = deal.get("old_price") or ""
-    link = deal["link"]
-
-    line_old = f"💸 Antes: {old}\n" if old else ""
-    return (
-        f"🔥 {name}\n"
-        f"{line_old}"
-        f"✅ Ahora: {price}\n\n"
-        f"🔗 {link}\n"
-        f"#SaaS #Deals #Ofertas"
-    )
-
-
-def format_deal_short(deal):
-    name = deal["name"]
-    price = deal["price"]
-    link = deal["link"]
-
-    return f"• {name} → {price}  {link}"
-
-
-def build_thread_for_deal(deal):
+def format_deal(deal: dict) -> str:
     """
-    Devuelve un hilo (lista de partes) para un solo deal.
-    Cada parte: {"text", "image_url", "alt"}
+    Formatea un deal en texto listo para publicar.
     """
-    parts = []
+    if not deal:
+        return "Hoy no hay deals disponibles."
 
-    # Intro
-    intro = (
-        f"🚀 SaaS destacado de hoy:\n\n"
-        f"{deal['name']}\n"
-        f"Precio actual: {deal['price']}\n"
-    )
-    parts.append(
-        {
-            "text": intro,
-            "image_url": deal.get("image_url"),
-            "alt": deal.get("name", "SaaS deal"),
-        }
-    )
+    name = deal.get("name", "").strip()
+    price = deal.get("price", "").strip()
+    old_price = deal.get("old_price", "").strip()
+    link = deal.get("link", "").strip()
 
-    # Detalle largo
-    parts.append(
-        {
-            "text": format_deal_long(deal),
-            "image_url": None,
-            "alt": None,
-        }
-    )
+    if not name:
+        return "Hoy no hay deals disponibles."
 
-    # Cierre
-    closing = (
-        "💡 Tip: Guarda este deal si encaja en tu stack.\n"
-        "#SaaS #Deals #Productividad"
-    )
-    parts.append(
-        {
-            "text": closing,
-            "image_url": None,
-            "alt": None,
-        }
-    )
+    texto = f"🔥 {name}"
 
-    return parts
+    if price:
+        texto += f" — {price}"
+    if old_price:
+        texto += f" (antes {old_price})"
+
+    if link:
+        texto += f"\n🔗 {link}"
+
+    return texto.strip()
 
 
-def build_single_post_for_deal(deal, short: bool = False):
-    return format_deal_short(deal) if short else format_deal_long(deal)
+def build_posts(deals: list[dict]) -> list[dict]:
+    """
+    Convierte deals en posts listos para publicar.
+    """
+    if not deals:
+        return [{"text": "Hoy no hay deals disponibles.", "image": None}]
+
+    posts = []
+    for d in deals:
+        posts.append({
+            "text": format_deal(d),
+            "image": d.get("image_url")
+        })
+
+    return posts
