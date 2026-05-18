@@ -1,76 +1,44 @@
 import requests
 from bs4 import BeautifulSoup
 
-
-BASE_URL = "https://saasdeals.com/deals"  # Sustituye por tu URL real
+BASE_URL = "https://saasdeals.app/deals"  # Ajusta a tu URL real
 
 
 def get_deals():
     """
-    Scraping básico de ejemplo.
-    Adáptalo a la estructura real de tu página.
-    Devuelve lista de dicts:
-    {
-        "name": str,
-        "price": str,
-        "old_price": str,
-        "link": str,
-        "image_url": str | None
-    }
+    Scraping robusto.
+    Si falla → devuelve [] (NO fallback antiguo).
     """
     try:
         resp = requests.get(BASE_URL, timeout=10)
         resp.raise_for_status()
     except Exception:
-        # Fallback si falla el scraping
-        return [
-            {
-                "name": "SaaS Premium",
-                "price": "$29",
-                "old_price": "$99",
-                "link": "https://saasdeals.com/premium",
-                "image_url": None,
-            }
-        ]
+        # No devolvemos un deal falso → así evitamos mensajes antiguos
+        return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
     deals = []
 
-    # EJEMPLO de estructura. Cambia los selectores a tu HTML real.
+    # Ajusta estos selectores a tu HTML real
     cards = soup.select(".deal-card")
     for card in cards:
-        name = (card.select_one(".deal-title") or {}).get_text(strip=True) if card.select_one(".deal-title") else None
-        price = (card.select_one(".deal-price") or {}).get_text(strip=True) if card.select_one(".deal-price") else None
-        old_price = (card.select_one(".deal-old-price") or {}).get_text(strip=True) if card.select_one(".deal-old-price") else None
-        link_tag = card.select_one("a")
-        link = link_tag["href"] if link_tag and link_tag.has_attr("href") else BASE_URL
-        img_tag = card.select_one("img")
-        image_url = img_tag["src"] if img_tag and img_tag.has_attr("src") else None
+        name_el = card.select_one(".deal-title")
+        price_el = card.select_one(".deal-price")
+        old_price_el = card.select_one(".deal-old-price")
+        link_el = card.select_one("a")
+        img_el = card.select_one("img")
 
-        if not name or not price:
+        if not name_el or not price_el:
             continue
 
-        deals.append(
-            {
-                "name": name,
-                "price": price,
-                "old_price": old_price or "",
-                "link": link,
-                "image_url": image_url,
-            }
-        )
+        deals.append({
+            "name": name_el.get_text(strip=True),
+            "price": price_el.get_text(strip=True),
+            "old_price": old_price_el.get_text(strip=True) if old_price_el else "",
+            "link": link_el["href"] if link_el and link_el.has_attr("href") else BASE_URL,
+            "image_url": img_el["src"] if img_el and img_el.has_attr("src") else None,
+        })
 
-    if not deals:
-        # Fallback si el HTML no coincide
-        return [
-            {
-                "name": "SaaS Premium",
-                "price": "$29",
-                "old_price": "$99",
-                "link": "https://saasdeals.com/premium",
-                "image_url": None,
-            }
-        ]
-
+    # Si no hay deals reales → devolvemos lista vacía
     return deals
